@@ -21,12 +21,13 @@ io.sockets.on('connection', function(socket){
   socket.id = Math.random();
   socket.x = 0;
   socket.y = 0;
+  socket.number = "" + Math.floor(10 * Math.random());
   SOCKET_LIST[socket.id] = socket;
 
-
-  socket.on('newPlayer', function(player){
-    console.log(player.name);
+  socket.on('disconnect', function(){
+    delete SOCKET_LIST[socket.id];
   });
+
 });
 
 
@@ -38,7 +39,8 @@ setInterval(function(){
     socket.y++;
     pack.push({
       x: socket.x,
-      y: socket.y
+      y: socket.y,
+      number: socket.number
     });
   }
   for(var i in SOCKET_LIST){
