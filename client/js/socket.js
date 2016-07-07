@@ -14,4 +14,35 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
   });
 
+
+  //player movement
+  document.onkeydown = function(e){
+    if (e.keyCode === 68) {
+      socket.emit('keyPress', {inputID:'right', state:true});
+    }
+    else if (e.keyCode === 83) {
+      socket.emit('keyPress', {inputID:'down', state:true});
+    }
+    else if (e.keyCode === 65) {
+      socket.emit('keyPress', {inputID:'left', state:true});
+    }
+    else if (e.keyCode === 87) {
+      socket.emit('keyPress', {inputID:'up', state:true});
+    }
+  }
+  document.onkeyup = function(e){
+    if (e.keyCode === 68) {
+      socket.emit('keyPress', {inputID:'right', state:false});
+    }
+    else if (e.keyCode === 83) {
+      socket.emit('keyPress', {inputID:'down', state:false});
+    }
+    else if (e.keyCode === 65) {
+      socket.emit('keyPress', {inputID:'left', state:false});
+    }
+    else if (e.keyCode === 87) {
+      socket.emit('keyPress', {inputID:'up', state:false});
+    }
+  }
+
 });
