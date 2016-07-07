@@ -42,6 +42,7 @@ setInterval(function(){
     });
   }
   for(var i in SOCKET_LIST){
+  var socket = SOCKET_LIST[i];
   socket.emit('newPositions', pack);
   }
 
