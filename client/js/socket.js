@@ -1,6 +1,9 @@
 
 document.addEventListener("DOMContentLoaded", function(event) {
   var ctx = document.getElementById("ctx").getContext("2d");
+  var chatText = document.getElementById("chat-text");
+  var chatInput = document.getElementById("chat-input");
+  var chatForm = document.getElementById("chat-form");
   ctx.font = "30px Arial";
 
   //connect to server
@@ -12,12 +15,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
     for (var i = 0; i < data.player.length; i++) {
       ctx.fillText(data.player[i].number,data.player[i].x,data.player[i].y);
     }
-
     for (var i = 0; i < data.bullet.length; i++) {
       ctx.fillRect(data.bullet[i].x-5,data.bullet[i].y-5,10,10);
     }
   });
 
+  //chat
+  socket.on('addToChat', function(data) {
+    chatText.innerHTML += '<div>' + data + '</div>';
+    chatText.scrollTop = chatText.scrollHeight;
+  });
+
+  chatForm.onsubmit = function(e) {
+    e.preventDefault();
+    socket.emit('sendMsgToServer', chatInput.value);
+    chatInput.value = "";
+  }
 
   //player movement
   document.onkeydown = function(e){
