@@ -62,4 +62,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
   }
 
+  document.onmousedown = function(event) {
+    socket.emit('keyPress', {inputID:'attack', state:true});
+  }
+  document.onmouseup = function(event) {
+    socket.emit('keyPress', {inputID:'attack', state:false});
+  }
+  document.onmousemove = function(event) {
+    var x = -250 + event.clientX - 8;
+    var y = -250 + event.clientY - 8;
+    var angle = Math.atan2(y,x) / Math.PI * 180;
+    socket.emit('keyPress', {inputID:'mouseAngle', state:angle});
+  }
+
 });

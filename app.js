@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var serv = require('http').Server(app);
+var Entity = require('./server/entity.class.js');
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/client/index.html');
@@ -15,32 +16,18 @@ serv.listen(app.get('port'), function(){
 
 var SOCKET_LIST = {};
 
-var Entity = function(){
-  var self = {
-    x:250,
-    y:250,
-    spdX:0,
-    spdY:0,
-    id:"",
-  }
-  self.updatePosition = function(){
-    self.x += self.spdX;
-    self.y += self.spdY;
-  }
-  self.update = function(){
-    self.updatePosition();
-  }
-  return self;
-}
+//moved entity to separate file
 
 var Player = function(id) {
-  var self = Entity();
+  var self = Entity.spawn();
   self.id = id;
   self.number = "" + Math.floor(10 * Math.random());
   self.pressingRight = false;
   self.pressingLeft = false;
   self.pressingUp = false;
   self.pressingDown = false;
+  self.pressingAttack = false;
+  self.mouseAngle = 0;
   self.maxSpd = 10;
 
   self.updateSpd = function(){
@@ -69,10 +56,22 @@ var Player = function(id) {
   self.update = function(){
     self.updateSpd();
     super_update();
+
+    if(self.pressingAttack){
+      self.shootBullet(self.mouseAngle);
+    }
   }
+
+  self.shootBullet = function(angle) {
+    var b = Bullet(self.id,angle);
+    b.x = self.x;
+    b.y = self.y;
+  }
+
   Player.list[id] = self;
   return self;
 }
+
 Player.list = {};
 Player.onConnect = function(socket){
   var player = Player(socket.id);
@@ -88,6 +87,12 @@ Player.onConnect = function(socket){
     }
     else if (data.inputID === 'down') {
       player.pressingDown = data.state;
+    }
+    else if (data.inputID === 'attack') {
+      player.pressingAttack = data.state;
+    }
+    else if (data.inputID === 'mouseAngle') {
+      player.mouseAngle = data.state;
     }
   });
 }
@@ -109,20 +114,29 @@ Player.update = function(){
 }
 
 
-var Bullet = function(angle){
-  var self = Entity();
+var Bullet = function(parent, angle){
+  var self = Entity.spawn();
   self.id = Math.random();
   self.spdX = Math.cos(angle/180*Math.PI) * 10;
   self.spdY = Math.sin(angle/180*Math.PI) * 10;
-
+  self.parent = parent;
   self.timer = 0;
   self.toRemove = false;
-  var super_update = function(){
+  var super_update = self.update;
+  self.update = function(){
     if (self.timer++ > 100){
       self.toRemove = true;
     }
-  }
     super_update();
+
+    for (var i in Player.list){
+      var p = Player.list[i];
+      if (self.getDistance(p) < 32 && self.parent !== p.id){
+        //handle bullet collision with player
+        self.toRemove = true;
+      }
+    }
+  }
   Bullet.list[self.id] = self;
   return self;
 }
@@ -130,19 +144,18 @@ var Bullet = function(angle){
 Bullet.list = {};
 
 Bullet.update = function(){
-
-  if(Math.random() < 0.1){
-    Bullet(Math.random()*360);
-  }
-
   var pack = [];
   for(var i in Bullet.list){
     var bullet = Bullet.list[i];
     bullet.update();
-    pack.push({
-      x:bullet.x,
-      y:bullet.y
-    });
+    if (bullet.toRemove){
+      delete Bullet.list[i];
+    } else {
+      pack.push({
+        x:bullet.x,
+        y:bullet.y
+      });
+    }
   }
   return pack;
 }
