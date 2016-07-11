@@ -92,7 +92,10 @@ Player.onConnect = function(socket){
       player.pressingAttack = data.state;
     }
     else if (data.inputID === 'mouseAngle') {
-      player.mouseAngle = data.state;
+      var x = (-player.x + data.state.x);
+      var y = (-player.y + data.state.y);
+      var angle = Math.atan2(y,x) / Math.PI * 180;
+      player.mouseAngle = angle;
     }
   });
 }
