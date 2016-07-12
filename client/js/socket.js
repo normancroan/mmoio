@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
   //player movement
   document.onkeydown = function(e){
+    if (document.activeElement.id === "chat-input") {return}
     if (e.keyCode === 68) {
       socket.emit('keyPress', {inputID:'right', state:true});
     }
@@ -63,12 +64,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
   }
 
   document.onmousedown = function(event) {
+    if (document.activeElement.id === "chat-input") {return}
     socket.emit('keyPress', {inputID:'attack', state:true});
   }
   document.onmouseup = function(event) {
     socket.emit('keyPress', {inputID:'attack', state:false});
   }
   document.onmousemove = function(event) {
+    if (document.activeElement.id === "chat-input") {return}
     var position = {x: event.clientX -8, y: event.clientY -8};
     socket.emit('keyPress', {inputID:'mouseAngle', state:position});
   }
