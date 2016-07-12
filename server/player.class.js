@@ -1,9 +1,8 @@
 var Entity = require('./entity.class.js');
+var Bullet = require('./bullet.class.js');
 
-//TODO Split out the Player class
-
-exports.spawn = function(id) {
-  var self = Entity.spawn();
+var Player = function(id) {
+  var self = new Entity();
   self.id = id;
   self.number = "" + Math.floor(10 * Math.random());
   self.pressingRight = false;
@@ -47,7 +46,7 @@ exports.spawn = function(id) {
   }
 
   self.shootBullet = function(angle) {
-    var b = Bullet(self.id,angle);
+    var b = new Bullet(self.id,angle,Player.list);
     b.x = self.x;
     b.y = self.y;
   }
@@ -55,3 +54,49 @@ exports.spawn = function(id) {
   Player.list[id] = self;
   return self;
 }
+
+Player.list = {};
+Player.onConnect = function(socket){
+  var player = Player(socket.id);
+  socket.on('keyPress', function(data){
+    if (data.inputID === 'left') {
+      player.pressingLeft = data.state;
+    }
+    else if (data.inputID === 'right') {
+      player.pressingRight = data.state;
+    }
+    else if (data.inputID === 'up') {
+      player.pressingUp = data.state;
+    }
+    else if (data.inputID === 'down') {
+      player.pressingDown = data.state;
+    }
+    else if (data.inputID === 'attack') {
+      player.pressingAttack = data.state;
+    }
+    else if (data.inputID === 'mouseAngle') {
+      var x = (-player.x + data.state.x);
+      var y = (-player.y + data.state.y);
+      var angle = Math.atan2(y,x) / Math.PI * 180;
+      player.mouseAngle = angle;
+    }
+  });
+}
+Player.onDisconnect = function(socket){
+  delete Player.list[socket.id];
+}
+Player.update = function(){
+  var pack = [];
+  for(var i in Player.list){
+    var player = Player.list[i];
+    player.update();
+    pack.push({
+      x:player.x,
+      y:player.y,
+      number: player.number
+    });
+  }
+  return pack;
+}
+
+module.exports = Player;

@@ -1,4 +1,4 @@
-exports.spawn = function(){
+var Entity = function(){
   var self = {
     x:250,
     y:250,
@@ -18,3 +18,5 @@ exports.spawn = function(){
   }
   return self;
 }
+
+module.exports = Entity;
