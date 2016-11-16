@@ -1,4 +1,2 @@
 # mmoio
-Our first multiplayer app
-
-Cool things soon to come
+Interact with it at https://mmoio.herokuapp.com/
